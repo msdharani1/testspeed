@@ -27,7 +27,7 @@
 
     #speedValue {
       position: absolute;
-      top: 65%;
+      top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       font-size: 24px;
@@ -38,16 +38,16 @@
 </head>
 <body>
   <div id="speedometer">
-    <img src="https://www.safetyrestore.com/blog/wp-content/uploads/2019/05/How-to-Change-Speedometer-Calibration.jpg" alt="">
+    <!-- <img src="" alt=""> -->
     <div id="speedValue">0</div>
   </div>
 
   <script>
     function updateSpeed(speed) {
-      // Limit the speed to be within the range of -180 to 180 degrees
-      const clampedSpeed = Math.max(Math.min(speed, 180), -180);
+      // Round the speed to the nearest whole number
+      const roundedSpeed = Math.round(Math.abs(speed));
       const speedValue = document.getElementById('speedValue');
-      speedValue.innerText = `${Math.abs(clampedSpeed)} km/h`;
+      speedValue.innerText = `${roundedSpeed} km/h`;
     }
 
     function success(position) {
