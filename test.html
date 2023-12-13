@@ -56,7 +56,7 @@
       speedValue.innerText = `${roundedSpeed} km/h`;
 
       // Check if QR code speed is less than current speed
-      const qrCodeSpeed = 30;
+      const qrCodeSpeed = 3;
       if (qrCodeSpeed < roundedSpeed) {
         // Play a sound (replace 'sound.mp3' with your actual sound file)
         const sound = new Howl({ src: ['sound.mp3'] });
