@@ -32,7 +32,7 @@
             position: absolute;
         }
     </style>
-    <title>Speedometer</title>
+    <title>Real-time Speedometer</title>
 </head>
 <body>
     <div class="speedometer">
@@ -44,17 +44,22 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Simulate fetching speed from an API
-            function fetchSpeed() {
-                // Replace this with your actual API call to get the speed
-                // For now, let's simulate a random speed between 0 and 120 km/h
-                return Math.floor(Math.random() * 121);
-            }
-
             function updateSpeed() {
                 const speedElement = document.getElementById('speedValue');
-                const speed = fetchSpeed();
-                speedElement.textContent = speed;
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        // The speed property is in meters per second, convert it to kilometers per hour
+                        const speed = position.coords.speed * 3.6 || 0;
+                        speedElement.textContent = speed.toFixed(0);
+                    }, function (error) {
+                        console.error('Error getting speed:', error);
+                        speedElement.textContent = 'N/A';
+                    });
+                } else {
+                    console.error('Geolocation not supported');
+                    speedElement.textContent = 'N/A';
+                }
             }
 
             // Update speed every second (1000 milliseconds)
