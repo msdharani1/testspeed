@@ -42,8 +42,6 @@
     <div id="speedValue">0</div>
   </div>
 
-  <button onclick="startSpeedometer()">Start Speedometer</button>
-
   <!-- Include the instascan library -->
   <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
 
@@ -71,7 +69,7 @@
 
     function success(position) {
       const speed = position.coords.speed || 0;
-      
+
       // Update the speedometer only if a significant time has passed since the last update
       const currentTime = new Date().getTime();
       if (currentTime - lastSpeedUpdateTime > 1000) {
@@ -84,29 +82,27 @@
       console.error('Unable to retrieve location information');
     }
 
-    function startSpeedometer() {
-      // Request high accuracy geolocation with a shorter update interval
-      navigator.geolocation.watchPosition(success, error, { enableHighAccuracy: true, maximumAge: 0 });
+    // Request high accuracy geolocation with a shorter update interval
+    navigator.geolocation.watchPosition(success, error, { enableHighAccuracy: true, maximumAge: 0 });
 
-      // QR code scanning logic remains unchanged
-      const scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
-      scanner.addListener('scan', function (content) {
-        // Assuming the content of the QR code is the speed value (replace with your actual QR code content)
-        const qrCodeSpeed = parseFloat(content) || 0;
-        updateSpeed(qrCodeSpeed);
-      });
+    // QR code scanning logic remains unchanged
+    const scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
+    scanner.addListener('scan', function (content) {
+      // Assuming the content of the QR code is the speed value (replace with your actual QR code content)
+      const qrCodeSpeed = parseFloat(content) || 0;
+      updateSpeed(qrCodeSpeed);
+    });
 
-      // Start the QR code scanner
-      Instascan.Camera.getCameras().then(function (cameras) {
-        if (cameras.length > 0) {
-          scanner.start(cameras[0]);
-        } else {
-          console.error('No cameras found.');
-        }
-      }).catch(function (e) {
-        console.error(e);
-      });
-    }
+    // Start the QR code scanner
+    Instascan.Camera.getCameras().then(function (cameras) {
+      if (cameras.length > 0) {
+        scanner.start(cameras[0]);
+      } else {
+        console.error('No cameras found.');
+      }
+    }).catch(function (e) {
+      console.error(e);
+    });
   </script>
 </body>
 </html>
