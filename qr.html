@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .speedometer {
+            width: 200px;
+            height: 200px;
+            background: #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .speed {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+        }
+
+        #qr-code-scanner {
+            display: none;
+        }
+    </style>
+    <title>Real-time Speedometer with QR Code</title>
+</head>
+<body>
+    <div class="speedometer">
+        <div class="speed">
+            <span id="speedValue">0</span>
+            <span> km/h</span>
+        </div>
+    </div>
+
+    <input type="file" accept="image/*" capture="camera" id="qr-code-scanner">
+
+    <script src="html5-qrcode.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const speedElement = document.getElementById('speedValue');
+            const qrCodeScanner = new Html5Qrcode('qr-code-scanner', { fps: 10, qrbox: 250 });
+
+            function updateSpeed(speed) {
+                speedElement.textContent = speed.toFixed(0);
+                // Play a sound (you can replace 'notification.mp3' with your sound file)
+                const audio = new Audio('notification.mp3');
+                audio.play();
+            }
+
+            function handleQRCodeSuccess(decodedText) {
+                // Assuming decodedText contains the speed information from the QR code
+                const speed = parseFloat(decodedText);
+                if (!isNaN(speed)) {
+                    updateSpeed(speed);
+                } else {
+                    console.error('Invalid QR Code content:', decodedText);
+                }
+            }
+
+            function handleQRCodeError(error) {
+                console.error('QR Code Scanner Error:', error);
+            }
+
+            // Start QR code scanning when the file input changes
+            document.getElementById('qr-code-scanner').addEventListener('change', function (e) {
+                qrCodeScanner.start({ facingMode: 'environment' }, { fps: 10 });
+            });
+
+            // Set up QR code scanner handlers
+            qrCodeScanner.on('decoded', handleQRCodeSuccess);
+            qrCodeScanner.on('error', handleQRCodeError);
+
+            // Update speed every second (1000 milliseconds)
+            setInterval(function () {
+                // Your logic to fetch real-time speed here (e.g., using Geolocation API)
+                const simulatedSpeed = Math.floor(Math.random() * 121);
+                updateSpeed(simulatedSpeed);
+            }, 1000);
+
+            // Initial update
+            updateSpeed(0);
+        });
+    </script>
+</body>
+</html>
