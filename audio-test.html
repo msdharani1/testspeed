@@ -61,7 +61,7 @@
                         speedElement.textContent = speed.toFixed(0);
 
                         // Compare QR code value and current speed
-                        if (qrCodeValue > speed) {
+                        if (qrCodeValue < speed) {
                             playSound();
                         }
                     }, function (error) {
