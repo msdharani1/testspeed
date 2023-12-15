@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-time Speedometer with QR Code Scanner</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    #preview {
+      width: 100%;
+      max-height: 50vh;
+    }
+
+    .speedometer {
+      width: 200px;
+      height: 200px;
+      background: #ddd;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 20px;
+      position: relative;
+    }
+
+    .speed {
+      font-size: 24px;
+      font-weight: bold;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: absolute;
+    }
+  </style>
+</head>
+<body>
+  <video id="preview"></video>
+
+  <div class="speedometer">
+    <div class="speed">
+      <span id="speedValue">0</span>
+      <span> km/h</span>
+    </div>
+  </div>
+
+  <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const speedElement = document.getElementById('speedValue');
+      let lastPosition = null;
+
+      function playSound() {
+        // Code to play the sound, for example using the Web Audio API
+        const audio = new Audio('sound.mp3');
+        audio.play();
+      }
+
+      function updateSpeed(speed) {
+        speedElement.textContent = speed.toFixed(0);
+      }
+
+      const scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
+
+      scanner.addListener('scan', function (content) {
+        // Scanned QR code value
+        const scannedValue = content;
+
+        // Get the current speed
+        const currentSpeed = parseFloat(speedElement.textContent);
+
+        // Show an alert box with the scanned QR code value and current speed
+        alert(`Maximum Speed: ${scannedValue} km/h\nCurrent Speed: ${currentSpeed} km/h`);
+
+        // Compare scanned QR code value and current speed
+        if (parseFloat(scannedValue) < currentSpeed) {
+          playSound();
+        }
+      });
+
+      Instascan.Camera.getCameras().then(function (cameras) {
+        if (cameras.length > 0) {
+          scanner.start(cameras[0]);
+        } else {
+          console.error('No cameras found.');
+        }
+      }).catch(function (e) {
+        console.error(e);
+      });
+
+      // Use watchPosition to continuously monitor the device's position
+      navigator.geolocation.watchPosition(function (position) {
+        if (lastPosition) {
+          // Calculate speed based on the change in position over time
+          const distance = haversineDistance(lastPosition.coords, position.coords);
+          const timeDiff = (position.timestamp - lastPosition.timestamp) / 1000; // convert to seconds
+          const speed = distance / timeDiff * 3.6; // convert to km/h
+          updateSpeed(speed);
+        }
+
+        lastPosition = position;
+      }, function (error) {
+        console.error('Error getting speed:', error);
+        speedElement.textContent = 'N/A';
+      });
+
+      // Initial update
+      updateSpeed(0);
+    });
+
+    // Function to calculate haversine distance between two coordinates
+    function haversineDistance(coord1, coord2) {
+      function toRadians(degrees) {
+        return degrees * Math.PI / 180;
+      }
+
+      const R = 6371; // Radius of the Earth in kilometers
+      const dLat = toRadians(coord2.latitude - coord1.latitude);
+      const dLon = toRadians(coord2.longitude - coord1.longitude);
+
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(toRadians(coord1.latitude)) * Math.cos(toRadians(coord2.latitude)) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+      return R * c;
+    }
+  </script>
+</body>
+</html>
