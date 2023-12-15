@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .speedometer {
+            width: 200px;
+            height: 200px;
+            background: #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .speed {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+        }
+    </style>
+    <title>Real-time Speedometer</title>
+</head>
+<body>
+    <div class="speedometer">
+        <div class="speed">
+            <span id="speedValue">0</span>
+            <span> km/h</span>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function playSound() {
+                // Code to play the sound, for example using the Web Audio API
+                const audio = new Audio('sound.mp3');
+                audio.play();
+            }
+
+            function updateSpeed() {
+                const speedElement = document.getElementById('speedValue');
+                const qrCodeValue = 30; // Replace with your QR code value
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        // The speed property is in meters per second, convert it to kilometers per hour
+                        const speed = position.coords.speed * 3.6 || 0;
+                        speedElement.textContent = speed.toFixed(0);
+
+                        // Compare QR code value and current speed
+                        if (qrCodeValue > speed) {
+                            playSound();
+                        }
+                    }, function (error) {
+                        console.error('Error getting speed:', error);
+                        speedElement.textContent = 'N/A';
+                    });
+                } else {
+                    console.error('Geolocation not supported');
+                    speedElement.textContent = 'N/A';
+                }
+            }
+
+            // Update speed every second (1000 milliseconds)
+            setInterval(updateSpeed, 1000);
+
+            // Initial update
+            updateSpeed();
+        });
+    </script>
+</body>
+</html>
