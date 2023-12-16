@@ -31,6 +31,12 @@
             align-items: center;
             position: absolute;
         }
+
+        #preview {
+            display: block; /* Make the video element visible */
+            width: 100%;
+            max-width: 400px; /* Adjust the maximum width as needed */
+        }
     </style>
     <title>Real-time Speedometer with QR Code</title>
 </head>
@@ -42,7 +48,7 @@
         </div>
     </div>
 
-    <video id="preview" style="display: none;"></video>
+    <video id="preview"></video>
 
     <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
     <script>
