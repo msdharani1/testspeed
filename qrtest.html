@@ -32,7 +32,7 @@
             position: absolute;
         }
     </style>
-    <title>Real-time Speedometer</title>
+    <title>Real-time Speedometer with QR Code</title>
 </head>
 <body>
     <div class="speedometer">
@@ -42,43 +42,58 @@
         </div>
     </div>
 
+    <video id="preview" style="display: none;"></video>
+
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            const speedElement = document.getElementById('speedValue');
+            let qrCodeValue = 50; // Default value, replace with your QR code value
+
             function playSound() {
                 // Code to play the sound, for example using the Web Audio API
                 const audio = new Audio('sound.mp3');
                 audio.play();
             }
 
-            function calculateSpeed(lastPosition, newPosition) {
-                // Calculate speed based on the change in position over time
-                const distance = haversineDistance(lastPosition.coords, newPosition.coords);
-                const timeDiff = (newPosition.timestamp - lastPosition.timestamp) / 1000; // convert to seconds
-                const speed = distance / timeDiff * 3.6; // convert to km/h
-                return speed;
+            function updateSpeed(speed) {
+                speedElement.textContent = speed.toFixed(0);
+
+                // Compare QR code value and current speed
+                if (qrCodeValue < speed) {
+                    playSound();
+                }
             }
 
-            function updateSpeed() {
-                const speedElement = document.getElementById('speedValue');
-                const qrCodeValue = 50; // Replace with your QR code value
+            function scanQRCode() {
+                const scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
 
+                scanner.addListener('scan', function (content) {
+                    alert('Scanned: ' + content);
+                    qrCodeValue = parseFloat(content) || 0;
+                });
+
+                Instascan.Camera.getCameras().then(function (cameras) {
+                    if (cameras.length > 0) {
+                        scanner.start(cameras[0]);
+                    } else {
+                        console.error('No cameras found.');
+                    }
+                }).catch(function (e) {
+                    console.error(e);
+                });
+            }
+
+            // Start QR code scanning
+            scanQRCode();
+
+            // Update speed every second (1000 milliseconds)
+            setInterval(function () {
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(function (position) {
-                        if (!window.lastPosition) {
-                            window.lastPosition = position;
-                        }
-
-                        // Calculate speed based on the change in position over time
-                        const speed = calculateSpeed(window.lastPosition, position);
-                        speedElement.textContent = speed.toFixed(0);
-
-                        // Compare QR code value and current speed
-                        if (qrCodeValue < speed) {
-                            playSound();
-                        }
-
-                        // Update the last position for the next calculation
-                        window.lastPosition = position;
+                        // The speed property is in meters per second, convert it to kilometers per hour
+                        const speed = position.coords.speed * 3.6 || 0;
+                        updateSpeed(speed);
                     }, function (error) {
                         console.error('Error getting speed:', error);
                         speedElement.textContent = 'N/A';
@@ -87,33 +102,8 @@
                     console.error('Geolocation not supported');
                     speedElement.textContent = 'N/A';
                 }
-            }
-
-            // Update speed every second (1000 milliseconds)
-            setInterval(updateSpeed, 1000);
-
-            // Initial update
-            updateSpeed();
+            }, 1000);
         });
-
-        // Function to calculate haversine distance between two coordinates
-        function haversineDistance(coord1, coord2) {
-            function toRadians(degrees) {
-                return degrees * Math.PI / 180;
-            }
-
-            const R = 6371; // Radius of the Earth in kilometers
-            const dLat = toRadians(coord2.latitude - coord1.latitude);
-            const dLon = toRadians(coord2.longitude - coord1.longitude);
-
-            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                    Math.cos(toRadians(coord1.latitude)) * Math.cos(toRadians(coord2.latitude)) *
-                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-            return R * c;
-        }
     </script>
 </body>
 </html>
